@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.avensys.rts.usergroupservice.constant.MessageConstants;
 import com.avensys.rts.usergroupservice.entity.UserGroupEntity;
 import com.avensys.rts.usergroupservice.exception.ServiceException;
+import com.avensys.rts.usergroupservice.payload.requesst.UserGroupRequestDTO;
 import com.avensys.rts.usergroupservice.service.UserGroupService;
 import com.avensys.rts.usergroupservice.util.ResponseUtil;
 
@@ -39,14 +40,14 @@ public class UserGroupController {
 	/**
 	 * This method is used to create a module.
 	 * 
-	 * @param userGroupEntity
+	 * @param userGroupRequestDTO
 	 * @return
 	 */
 	@PostMapping
-	public ResponseEntity<?> create(@RequestBody UserGroupEntity userGroupEntity) {
+	public ResponseEntity<?> create(@RequestBody UserGroupRequestDTO userGroupRequestDTO) {
 		LOG.info("create module request received");
 		try {
-			userGroupService.save(userGroupEntity);
+			userGroupService.save(userGroupRequestDTO);
 			return ResponseUtil.generateSuccessResponse(null, HttpStatus.CREATED,
 					messageSource.getMessage(MessageConstants.MESSAGE_CREATED, null, LocaleContextHolder.getLocale()));
 		} catch (ServiceException e) {
@@ -57,14 +58,14 @@ public class UserGroupController {
 	/**
 	 * This method is used to update module information
 	 * 
-	 * @param userGroupEntity
+	 * @param userGroupRequestDTO
 	 * @return
 	 */
 	@PutMapping
-	public ResponseEntity<?> update(@RequestBody UserGroupEntity userGroupEntity) {
+	public ResponseEntity<?> update(@RequestBody UserGroupRequestDTO userGroupRequestDTO) {
 		LOG.info("update module request received");
 		try {
-			userGroupService.update(userGroupEntity);
+			userGroupService.update(userGroupRequestDTO);
 			return ResponseUtil.generateSuccessResponse(null, HttpStatus.OK,
 					messageSource.getMessage(MessageConstants.MESSAGE_UPDATED, null, LocaleContextHolder.getLocale()));
 		} catch (ServiceException e) {

@@ -1,16 +1,23 @@
 package com.avensys.rts.usergroupservice.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.avensys.rts.usergroupservice.entity.RoleEntity;
+import com.avensys.rts.usergroupservice.entity.UserEntity;
 import com.avensys.rts.usergroupservice.entity.UserGroupEntity;
 import com.avensys.rts.usergroupservice.exception.ServiceException;
+import com.avensys.rts.usergroupservice.payload.requesst.UserGroupRequestDTO;
+import com.avensys.rts.usergroupservice.repository.RoleRepository;
 import com.avensys.rts.usergroupservice.repository.UserGroupRepository;
+import com.avensys.rts.usergroupservice.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -22,27 +29,90 @@ public class UserGroupService {
 	private UserGroupRepository userGroupRepository;
 
 	@Autowired
+	private UserRepository userRepository;
+
+	@Autowired
+	private RoleRepository roleRepository;
+
+	@Autowired
 	private MessageSource messageSource;
 
-	public void save(UserGroupEntity userGroupEntity) throws ServiceException {
+	private UserGroupEntity mapRequestToEntity(UserGroupRequestDTO userGroupRequestDTO) {
+		UserGroupEntity entity = new UserGroupEntity();
+		entity.setUserGroupName(userGroupRequestDTO.getUserGroupName());
+		entity.setUserGroupDescription(userGroupRequestDTO.getDescription());
+		return entity;
+	}
+
+	public void save(UserGroupRequestDTO userGroupRequestDTO) throws ServiceException {
 
 		// add check for name exists in a DB
-		if (userGroupRepository.existsByUserGroupName(userGroupEntity.getUserGroupName())) {
+		if (userGroupRepository.existsByUserGroupName(userGroupRequestDTO.getUserGroupName())) {
 			throw new ServiceException(
-					messageSource.getMessage("error.modulenametaken", null, LocaleContextHolder.getLocale()));
+					messageSource.getMessage("error.groupnametaken", null, LocaleContextHolder.getLocale()));
 		}
+
+		UserGroupEntity userGroupEntity = mapRequestToEntity(userGroupRequestDTO);
+		Set<UserEntity> users = new HashSet<UserEntity>();
+		Set<RoleEntity> roles = new HashSet<RoleEntity>();
+
+		if (userGroupRequestDTO.getUsers() != null && userGroupRequestDTO.getUsers().size() > 0) {
+			userGroupRequestDTO.getUsers().forEach(id -> {
+				Optional<UserEntity> userEntity = userRepository.findById(id);
+				if (userEntity.isPresent()) {
+					users.add(userEntity.get());
+				}
+			});
+		}
+
+		if (userGroupRequestDTO.getRoles() != null && userGroupRequestDTO.getRoles().size() > 0) {
+			userGroupRequestDTO.getRoles().forEach(id -> {
+				Optional<RoleEntity> roleEntity = roleRepository.findById(id);
+				if (roleEntity.isPresent()) {
+					roles.add(roleEntity.get());
+				}
+			});
+		}
+
+		userGroupEntity.setUsers(users);
+		userGroupEntity.setRoleEntities(roles);
 
 		userGroupRepository.save(userGroupEntity);
 	}
 
-	public void update(UserGroupEntity userGroupEntity) throws ServiceException {
-		getById(userGroupEntity.getId());
+	public void update(UserGroupRequestDTO userGroupRequestDTO) throws ServiceException {
+		getById(userGroupRequestDTO.getId());
 
 		// add check for name exists in a DB
-		if (userGroupRepository.existsByUserGroupName(userGroupEntity.getUserGroupName())) {
+		if (userGroupRepository.existsByUserGroupName(userGroupRequestDTO.getUserGroupName())) {
 			throw new ServiceException(
-					messageSource.getMessage("error.modulenametaken", null, LocaleContextHolder.getLocale()));
+					messageSource.getMessage("error.groupnametaken", null, LocaleContextHolder.getLocale()));
 		}
+
+		UserGroupEntity userGroupEntity = mapRequestToEntity(userGroupRequestDTO);
+		Set<UserEntity> users = new HashSet<UserEntity>();
+		Set<RoleEntity> roles = new HashSet<RoleEntity>();
+
+		if (userGroupRequestDTO.getUsers() != null && userGroupRequestDTO.getUsers().size() > 0) {
+			userGroupRequestDTO.getUsers().forEach(id -> {
+				Optional<UserEntity> userEntity = userRepository.findById(id);
+				if (userEntity.isPresent()) {
+					users.add(userEntity.get());
+				}
+			});
+		}
+
+		if (userGroupRequestDTO.getRoles() != null && userGroupRequestDTO.getRoles().size() > 0) {
+			userGroupRequestDTO.getRoles().forEach(id -> {
+				Optional<RoleEntity> roleEntity = roleRepository.findById(id);
+				if (roleEntity.isPresent()) {
+					roles.add(roleEntity.get());
+				}
+			});
+		}
+
+		userGroupEntity.setUsers(users);
+		userGroupEntity.setRoleEntities(roles);
 
 		userGroupRepository.save(userGroupEntity);
 	}
@@ -63,7 +133,7 @@ public class UserGroupService {
 		if (permission.isPresent() && !permission.get().getIsDeleted()) {
 			return permission.get();
 		} else {
-			throw new ServiceException(messageSource.getMessage("error.modulenotfound", new Object[] { id },
+			throw new ServiceException(messageSource.getMessage("error.groupnotfound", new Object[] { id },
 					LocaleContextHolder.getLocale()));
 		}
 	}
