@@ -81,13 +81,17 @@ public class UserGroupService {
 	}
 
 	public void update(UserGroupRequestDTO userGroupRequestDTO) throws ServiceException {
-		getById(userGroupRequestDTO.getId());
 
-		// add check for name exists in a DB
-		if (userGroupRepository.existsByUserGroupName(userGroupRequestDTO.getUserGroupName())) {
+		Optional<UserGroupEntity> dbUser = userGroupRepository
+				.findByUserGroupName(userGroupRequestDTO.getUserGroupName());
+
+		// add check for groupname exists in a DB
+		if (dbUser.isPresent() && dbUser.get().getId() != userGroupRequestDTO.getId()) {
 			throw new ServiceException(
 					messageSource.getMessage("error.groupnametaken", null, LocaleContextHolder.getLocale()));
 		}
+
+		getById(userGroupRequestDTO.getId());
 
 		UserGroupEntity userGroupEntity = mapRequestToEntity(userGroupRequestDTO);
 		Set<UserEntity> users = new HashSet<UserEntity>();
@@ -139,7 +143,7 @@ public class UserGroupService {
 	}
 
 	public List<UserGroupEntity> fetchList() {
-		return (List<UserGroupEntity>) userGroupRepository.findAll();
+		return (List<UserGroupEntity>) userGroupRepository.findAllAndIsDeleted(false);
 	}
 
 }
