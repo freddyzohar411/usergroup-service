@@ -9,6 +9,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ import com.avensys.rts.usergroupservice.payload.requesst.UserGroupRequestDTO;
 import com.avensys.rts.usergroupservice.service.UserGroupService;
 import com.avensys.rts.usergroupservice.util.ResponseUtil;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/usergroup")
 public class UserGroupController {
