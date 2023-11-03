@@ -76,7 +76,7 @@ public class UserGroupService {
 
 		userGroupEntity.setUsers(users);
 		userGroupEntity.setRoleEntities(roles);
-
+		System.out.println("WHYYY");
 		userGroupRepository.save(userGroupEntity);
 	}
 
