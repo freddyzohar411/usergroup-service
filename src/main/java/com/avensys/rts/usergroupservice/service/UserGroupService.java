@@ -39,6 +39,9 @@ public class UserGroupService {
 
 	private UserGroupEntity mapRequestToEntity(UserGroupRequestDTO userGroupRequestDTO) {
 		UserGroupEntity entity = new UserGroupEntity();
+		if (userGroupRequestDTO.getId() != null) {
+			entity.setId(userGroupRequestDTO.getId());
+		}
 		entity.setUserGroupName(userGroupRequestDTO.getUserGroupName());
 		entity.setUserGroupDescription(userGroupRequestDTO.getDescription());
 		return entity;
@@ -82,6 +85,8 @@ public class UserGroupService {
 
 	public void update(UserGroupRequestDTO userGroupRequestDTO) throws ServiceException {
 
+		getById(userGroupRequestDTO.getId());
+
 		Optional<UserGroupEntity> dbUser = userGroupRepository
 				.findByUserGroupName(userGroupRequestDTO.getUserGroupName());
 
@@ -90,8 +95,6 @@ public class UserGroupService {
 			throw new ServiceException(
 					messageSource.getMessage("error.groupnametaken", null, LocaleContextHolder.getLocale()));
 		}
-
-		getById(userGroupRequestDTO.getId());
 
 		UserGroupEntity userGroupEntity = mapRequestToEntity(userGroupRequestDTO);
 		Set<UserEntity> users = new HashSet<UserEntity>();
