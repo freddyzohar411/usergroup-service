@@ -13,14 +13,16 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 import lombok.Setter;
 
 @Setter
+@Getter
 @Entity
 @Table(name = "roles", uniqueConstraints = { @UniqueConstraint(columnNames = { "role_name" }) })
 public class RoleEntity extends BaseEntity {
@@ -39,32 +41,12 @@ public class RoleEntity extends BaseEntity {
 	@Column(name = "role_description")
 	private String roleDescription;
 
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@JoinTable(name = "role_modules", joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "module_id", referencedColumnName = "id"))
-	private Set<ModuleEntity> modules;
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "role_id", referencedColumnName = "id")
+	private Set<RoleModulePermissionsEntity> modulePermissions;
 
-	@ManyToMany(mappedBy = "roleEntities")
+	@ManyToMany(mappedBy = "roleEntities", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JsonProperty(access = Access.WRITE_ONLY)
 	private Set<UserGroupEntity> groupEntities;
-
-	public Long getId() {
-		return id;
-	}
-
-	public String getRoleName() {
-		return roleName;
-	}
-
-	public String getRoleDescription() {
-		return roleDescription;
-	}
-
-	public Set<ModuleEntity> getModules() {
-		return modules;
-	}
-
-	public Set<UserGroupEntity> getGroupEntities() {
-		return groupEntities;
-	}
 
 }
