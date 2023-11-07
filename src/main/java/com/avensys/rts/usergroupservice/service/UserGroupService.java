@@ -222,13 +222,18 @@ public class UserGroupService {
 				}
 			}
 
-			// Add isDeleted and isActive predicates
-			predicates.add(criteriaBuilder.equal(root.get("isDeleted"), isDeleted)); // Assuming isDeleted is a boolean
-																						// // field
-			predicates.add(criteriaBuilder.equal(root.get("isActive"), isActive)); // Assuming isActive i
+			Predicate searchOrPredicates = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
 
-			Predicate searchOrPredicates = criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-			return criteriaBuilder.and(searchOrPredicates);
+			List<Predicate> fixPredicates = new ArrayList<>();
+			// Add conditions for isDeleted and isActive
+			fixPredicates.add(criteriaBuilder.equal(root.get("isDeleted"), isDeleted));
+			fixPredicates.add(criteriaBuilder.equal(root.get("isActive"), isActive));
+
+			// Combine all predicates with AND
+			Predicate finalPredicate = criteriaBuilder.and(searchOrPredicates,
+					criteriaBuilder.and(fixPredicates.toArray(new Predicate[0])));
+
+			return finalPredicate;
 		};
 	}
 }
