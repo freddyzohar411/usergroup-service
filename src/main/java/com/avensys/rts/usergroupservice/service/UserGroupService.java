@@ -1,13 +1,17 @@
 package com.avensys.rts.usergroupservice.service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.avensys.rts.usergroupservice.entity.RoleEntity;
@@ -79,7 +83,6 @@ public class UserGroupService {
 
 		userGroupEntity.setUsers(users);
 		userGroupEntity.setRoleEntities(roles);
-
 		userGroupRepository.save(userGroupEntity);
 	}
 
@@ -149,4 +152,76 @@ public class UserGroupService {
 		return (List<UserGroupEntity>) userGroupRepository.findAllAndIsDeleted(false);
 	}
 
+	public Page<UserGroupEntity> getUserGroupListingPage(Integer page, Integer size, String sortBy,
+			String sortDirection) {
+		Sort sort = null;
+		if (sortBy != null) {
+			// Get direction based on sort direction
+			Sort.Direction direction = Sort.DEFAULT_DIRECTION;
+			if (sortDirection != null) {
+				direction = sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+			}
+			sort = Sort.by(direction, sortBy);
+		} else {
+			sort = Sort.by(Sort.Direction.DESC, "updatedAt");
+		}
+		Pageable pageable = null;
+		if (page == null && size == null) {
+			pageable = PageRequest.of(0, Integer.MAX_VALUE, sort);
+		} else {
+			pageable = PageRequest.of(page, size, sort);
+		}
+		Page<UserGroupEntity> usersPage = userGroupRepository.findAllByPaginationAndSort(false, true, pageable);
+		return usersPage;
+	}
+
+	public Page<UserGroupEntity> getUserGroupListingPageWithSearch(Integer page, Integer size, String sortBy,
+			String sortDirection, String searchTerm) {
+		Sort sort = null;
+		if (sortBy != null) {
+			// Get direction based on sort direction
+			Sort.Direction direction = Sort.DEFAULT_DIRECTION;
+			if (sortDirection != null) {
+				direction = sortDirection.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+			}
+			sort = Sort.by(direction, sortBy);
+		} else {
+			sort = Sort.by(Sort.Direction.DESC, "updatedAt");
+		}
+
+		Pageable pageable = null;
+		if (page == null && size == null) {
+			pageable = PageRequest.of(0, Integer.MAX_VALUE, sort);
+		} else {
+			pageable = PageRequest.of(page, size, sort);
+		}
+		// Dynamic search based on custom view (future feature)
+		List<String> customView = List.of("userGroupName", "userGroupDescription");
+		Page<UserGroupEntity> usersPage = userGroupRepository.findAll(getSpecification(searchTerm, customView),
+				pageable);
+		return usersPage;
+	}
+
+	private Specification<UserGroupEntity> getSpecification(String searchTerm, List<String> customView) {
+		return (root, query, criteriaBuilder) -> {
+			List<Predicate> predicates = new ArrayList<>();
+			// Custom fields you want to search in
+			for (String field : customView) {
+				Path<Object> fieldPath = root.get(field);
+				if (fieldPath.getJavaType() == Integer.class) {
+					try {
+						Integer id = Integer.parseInt(searchTerm);
+						predicates.add(criteriaBuilder.equal(fieldPath, id));
+					} catch (NumberFormatException e) {
+						// Ignore if it's not a valid integer
+					}
+				} else {
+					predicates.add(criteriaBuilder.like(criteriaBuilder.lower(fieldPath.as(String.class)),
+							"%" + searchTerm.toLowerCase() + "%"));
+				}
+			}
+			Predicate searchOrPredicates = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+			return criteriaBuilder.and(searchOrPredicates);
+		};
+	}
 }

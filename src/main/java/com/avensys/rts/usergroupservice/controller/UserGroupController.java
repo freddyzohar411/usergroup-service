@@ -2,6 +2,7 @@ package com.avensys.rts.usergroupservice.controller;
 
 import java.util.List;
 
+import com.avensys.rts.usergroupservice.payload.requesst.UserGroupListingRequestDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,4 +103,25 @@ public class UserGroupController {
 		return ResponseUtil.generateSuccessResponse(permissions, HttpStatus.OK, null);
 	}
 
+	@PostMapping("listing")
+	public ResponseEntity<Object> getUserGroupListing(
+			@RequestBody UserGroupListingRequestDTO userGroupListingRequestDTO) {
+		Integer page = userGroupListingRequestDTO.getPage();
+		Integer pageSize = userGroupListingRequestDTO.getPageSize();
+		String sortBy = userGroupListingRequestDTO.getSortBy();
+		String sortDirection = userGroupListingRequestDTO.getSortDirection();
+		String searchTerm = userGroupListingRequestDTO.getSearchTerm();
+		if (searchTerm == null || searchTerm.isEmpty()) {
+			return ResponseUtil.generateSuccessResponse(
+					ResponseUtil.mapUserGroupEntityPageToUserGroupListingResponse(
+							userGroupService.getUserGroupListingPage(page, pageSize, sortBy, sortDirection)),
+					HttpStatus.OK,
+					messageSource.getMessage(MessageConstants.MESSAGE_SUCCESS, null, LocaleContextHolder.getLocale()));
+		}
+		return ResponseUtil.generateSuccessResponse(
+				ResponseUtil.mapUserGroupEntityPageToUserGroupListingResponse(userGroupService
+						.getUserGroupListingPageWithSearch(page, pageSize, sortBy, sortDirection, searchTerm)),
+				HttpStatus.OK,
+				messageSource.getMessage(MessageConstants.MESSAGE_SUCCESS, null, LocaleContextHolder.getLocale()));
+	}
 }
