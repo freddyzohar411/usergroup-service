@@ -197,12 +197,13 @@ public class UserGroupService {
 		}
 		// Dynamic search based on custom view (future feature)
 		List<String> customView = List.of("userGroupName", "userGroupDescription");
-		Page<UserGroupEntity> usersPage = userGroupRepository.findAll(getSpecification(searchTerm, customView),
-				pageable);
+		Page<UserGroupEntity> usersPage = userGroupRepository
+				.findAll(getSpecification(searchTerm, customView, false, true), pageable);
 		return usersPage;
 	}
 
-	private Specification<UserGroupEntity> getSpecification(String searchTerm, List<String> customView) {
+	private Specification<UserGroupEntity> getSpecification(String searchTerm, List<String> customView,
+			Boolean isDeleted, Boolean isActive) {
 		return (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 			// Custom fields you want to search in
@@ -220,7 +221,13 @@ public class UserGroupService {
 							"%" + searchTerm.toLowerCase() + "%"));
 				}
 			}
-			Predicate searchOrPredicates = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+
+			// Add isDeleted and isActive predicates
+			predicates.add(criteriaBuilder.equal(root.get("isDeleted"), isDeleted)); // Assuming isDeleted is a boolean
+																						// // field
+			predicates.add(criteriaBuilder.equal(root.get("isActive"), isActive)); // Assuming isActive i
+
+			Predicate searchOrPredicates = criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 			return criteriaBuilder.and(searchOrPredicates);
 		};
 	}
