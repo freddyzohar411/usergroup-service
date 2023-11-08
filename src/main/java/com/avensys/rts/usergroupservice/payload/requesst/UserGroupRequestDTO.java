@@ -18,4 +18,6 @@ public class UserGroupRequestDTO {
 	private String description;
 	private List<Long> users;
 	private List<Long> roles;
+	private Long createdBy;
+	private Long updatedBy;
 }
