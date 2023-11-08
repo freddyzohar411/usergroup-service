@@ -2,7 +2,6 @@ package com.avensys.rts.usergroupservice.controller;
 
 import java.util.List;
 
-import com.avensys.rts.usergroupservice.payload.requesst.UserGroupListingRequestDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,14 +16,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.avensys.rts.usergroupservice.constant.MessageConstants;
 import com.avensys.rts.usergroupservice.entity.UserGroupEntity;
 import com.avensys.rts.usergroupservice.exception.ServiceException;
+import com.avensys.rts.usergroupservice.payload.requesst.UserGroupListingRequestDTO;
 import com.avensys.rts.usergroupservice.payload.requesst.UserGroupRequestDTO;
 import com.avensys.rts.usergroupservice.service.UserGroupService;
+import com.avensys.rts.usergroupservice.util.JwtUtil;
 import com.avensys.rts.usergroupservice.util.ResponseUtil;
 
 @CrossOrigin
@@ -40,6 +42,9 @@ public class UserGroupController {
 	@Autowired
 	private MessageSource messageSource;
 
+	@Autowired
+	private JwtUtil jwtUtil;
+
 	/**
 	 * This method is used to create a module.
 	 * 
@@ -47,9 +52,13 @@ public class UserGroupController {
 	 * @return
 	 */
 	@PostMapping
-	public ResponseEntity<?> create(@RequestBody UserGroupRequestDTO userGroupRequestDTO) {
+	public ResponseEntity<?> create(@RequestBody UserGroupRequestDTO userGroupRequestDTO,
+			@RequestHeader(name = "Authorization") String token) {
 		LOG.info("create module request received");
 		try {
+			Long userId = jwtUtil.getUserId(token);
+			userGroupRequestDTO.setCreatedBy(userId);
+			userGroupRequestDTO.setUpdatedBy(userId);
 			userGroupService.save(userGroupRequestDTO);
 			return ResponseUtil.generateSuccessResponse(null, HttpStatus.CREATED,
 					messageSource.getMessage(MessageConstants.MESSAGE_CREATED, null, LocaleContextHolder.getLocale()));
@@ -65,9 +74,12 @@ public class UserGroupController {
 	 * @return
 	 */
 	@PutMapping
-	public ResponseEntity<?> update(@RequestBody UserGroupRequestDTO userGroupRequestDTO) {
+	public ResponseEntity<?> update(@RequestBody UserGroupRequestDTO userGroupRequestDTO,
+			@RequestHeader(name = "Authorization") String token) {
 		LOG.info("update module request received");
 		try {
+			Long userId = jwtUtil.getUserId(token);
+			userGroupRequestDTO.setUpdatedBy(userId);
 			userGroupService.update(userGroupRequestDTO);
 			return ResponseUtil.generateSuccessResponse(null, HttpStatus.OK,
 					messageSource.getMessage(MessageConstants.MESSAGE_UPDATED, null, LocaleContextHolder.getLocale()));
@@ -97,7 +109,7 @@ public class UserGroupController {
 		}
 	}
 
-	@GetMapping()
+	@GetMapping
 	public ResponseEntity<?> findAll() {
 		List<UserGroupEntity> permissions = userGroupService.fetchList();
 		return ResponseUtil.generateSuccessResponse(permissions, HttpStatus.OK, null);

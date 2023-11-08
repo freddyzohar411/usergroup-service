@@ -1,9 +1,11 @@
 package com.avensys.rts.usergroupservice.service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -23,6 +25,8 @@ import com.avensys.rts.usergroupservice.repository.RoleRepository;
 import com.avensys.rts.usergroupservice.repository.UserGroupRepository;
 import com.avensys.rts.usergroupservice.repository.UserRepository;
 
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 
 @Transactional
@@ -48,6 +52,8 @@ public class UserGroupService {
 		}
 		entity.setUserGroupName(userGroupRequestDTO.getUserGroupName());
 		entity.setUserGroupDescription(userGroupRequestDTO.getDescription());
+		entity.setIsActive(true);
+		entity.setIsDeleted(false);
 		return entity;
 	}
 
@@ -83,12 +89,12 @@ public class UserGroupService {
 
 		userGroupEntity.setUsers(users);
 		userGroupEntity.setRoleEntities(roles);
+		userGroupEntity.setCreatedBy(userGroupRequestDTO.getCreatedBy());
+		userGroupEntity.setUpdatedBy(userGroupRequestDTO.getUpdatedBy());
 		userGroupRepository.save(userGroupEntity);
 	}
 
 	public void update(UserGroupRequestDTO userGroupRequestDTO) throws ServiceException {
-
-		getById(userGroupRequestDTO.getId());
 
 		Optional<UserGroupEntity> dbUser = userGroupRepository
 				.findByUserGroupName(userGroupRequestDTO.getUserGroupName());
@@ -99,7 +105,10 @@ public class UserGroupService {
 					messageSource.getMessage("error.groupnametaken", null, LocaleContextHolder.getLocale()));
 		}
 
-		UserGroupEntity userGroupEntity = mapRequestToEntity(userGroupRequestDTO);
+		UserGroupEntity userGroupEntity = getById(userGroupRequestDTO.getId());
+		userGroupEntity.setUserGroupName(userGroupRequestDTO.getUserGroupName());
+		userGroupEntity.setUserGroupDescription(userGroupRequestDTO.getDescription());
+
 		Set<UserEntity> users = new HashSet<UserEntity>();
 		Set<RoleEntity> roles = new HashSet<RoleEntity>();
 
@@ -123,7 +132,7 @@ public class UserGroupService {
 
 		userGroupEntity.setUsers(users);
 		userGroupEntity.setRoleEntities(roles);
-
+		userGroupEntity.setUpdatedBy(userGroupRequestDTO.getUpdatedBy());
 		userGroupRepository.save(userGroupEntity);
 	}
 
