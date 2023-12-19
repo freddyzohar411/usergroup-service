@@ -157,6 +157,21 @@ public class UserGroupService {
 		}
 	}
 
+	public UserGroupEntity getByName(String name) throws ServiceException {
+		if (name == null) {
+			throw new ServiceException(messageSource.getMessage("error.provide.name", new Object[] { name },
+					LocaleContextHolder.getLocale()));
+		}
+
+		Optional<UserGroupEntity> permission = userGroupRepository.findByUserGroupName(name);
+		if (permission.isPresent() && !permission.get().getIsDeleted()) {
+			return permission.get();
+		} else {
+			throw new ServiceException(messageSource.getMessage("error.groupnotfound.name", new Object[] { name },
+					LocaleContextHolder.getLocale()));
+		}
+	}
+
 	public List<UserGroupEntity> fetchList() {
 		return (List<UserGroupEntity>) userGroupRepository.findAllAndIsDeleted(false);
 	}
