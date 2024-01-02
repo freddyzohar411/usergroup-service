@@ -109,6 +109,16 @@ public class UserGroupController {
 		}
 	}
 
+	@GetMapping("/name/{name}")
+	public ResponseEntity<?> findByName(@PathVariable("name") String name) {
+		try {
+			UserGroupEntity module = userGroupService.getByName(name);
+			return ResponseUtil.generateSuccessResponse(module, HttpStatus.OK, null);
+		} catch (ServiceException e) {
+			return ResponseUtil.generateSuccessResponse(null, HttpStatus.NOT_FOUND, e.getMessage());
+		}
+	}
+
 	@GetMapping
 	public ResponseEntity<?> findAll() {
 		List<UserGroupEntity> permissions = userGroupService.fetchList();
