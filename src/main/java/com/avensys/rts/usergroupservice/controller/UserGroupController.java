@@ -51,7 +51,7 @@ public class UserGroupController {
 	 * @param userGroupRequestDTO
 	 * @return
 	 */
-	@PostMapping
+	@PostMapping("/add")
 	public ResponseEntity<?> create(@RequestBody UserGroupRequestDTO userGroupRequestDTO,
 			@RequestHeader(name = "Authorization") String token) {
 		LOG.info("create module request received");
@@ -73,7 +73,7 @@ public class UserGroupController {
 	 * @param userGroupRequestDTO
 	 * @return
 	 */
-	@PutMapping
+	@PutMapping("/edit")
 	public ResponseEntity<?> update(@RequestBody UserGroupRequestDTO userGroupRequestDTO,
 			@RequestHeader(name = "Authorization") String token) {
 		LOG.info("update module request received");
