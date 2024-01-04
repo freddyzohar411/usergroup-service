@@ -88,7 +88,7 @@ public class UserGroupController {
 		}
 	}
 
-	@DeleteMapping("/{id}")
+	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<?> deleteUser(@PathVariable("id") Long id) {
 		try {
 			userGroupService.delete(id);
