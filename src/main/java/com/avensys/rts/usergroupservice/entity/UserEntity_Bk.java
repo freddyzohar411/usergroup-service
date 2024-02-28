@@ -22,7 +22,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = { "username" }),
 		@UniqueConstraint(columnNames = { "email" }) })
-public class UserEntity extends BaseEntity {
+public class UserEntity_Bk extends BaseEntity {
 
 	private static final long serialVersionUID = -4259261306081521415L;
 

@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.avensys.rts.usergroupservice.payload.requesst.UserAddUserGroupsRequestDTO;
+import com.avensys.rts.usergroupservice.util.HttpResponse;
+import com.avensys.rts.usergroupservice.util.JwtUtil;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -44,6 +48,12 @@ public class UserGroupService {
 
 	@Autowired
 	private MessageSource messageSource;
+
+	@Autowired
+	private EntityManager entityManager;
+
+	@Autowired
+	private JwtUtil jwtUtil;
 
 	private UserGroupEntity mapRequestToEntity(UserGroupRequestDTO userGroupRequestDTO) {
 		UserGroupEntity entity = new UserGroupEntity();
@@ -260,4 +270,39 @@ public class UserGroupService {
 			return finalPredicate;
 		};
 	}
+
+	// Added 28022024 - Koh He Xiang
+	// Add user groups to user
+	@Transactional
+	public void addUserGroups(UserAddUserGroupsRequestDTO userAddUserGroupsRequestDTO) throws ServiceException {
+		entityManager.clear();
+		Long updateUserId =  getUserId();
+		System.out.println("updateUserId: " + updateUserId);
+		System.out.println("Look for User id: " + userAddUserGroupsRequestDTO.getUserId());
+		Optional<UserEntity> user = userRepository.findById(userAddUserGroupsRequestDTO.getUserId());
+		System.out.println("I am in USER: " + user.isPresent());
+		if (user.isPresent()) {
+//			System.out.println("I am in USER: " + user.get());
+			List<Long> userGroups = userAddUserGroupsRequestDTO.getUserGroupIds();
+			System.out.println("userGroups Now: " + userGroups);
+			userGroups.forEach(id -> {
+				Optional<UserGroupEntity> userGroupEntity = userGroupRepository.findById(id);
+				if (userGroupEntity.isPresent()) {
+					userGroupEntity.get().addUserEntity(user.get());
+					userGroupEntity.get().setUpdatedBy(updateUserId);
+					System.out.println("UserGroupEntity: " + userGroupEntity.get().getUserGroupName());
+					userGroupEntity.get().getUsers().forEach(userEntity -> {
+						System.out.println("UserEntity: " + userEntity);
+					});
+					userGroupRepository.save(userGroupEntity.get());
+				}
+			});
+		}
+	}
+
+	private Long getUserId() {
+		String token = JwtUtil.getTokenFromContext();
+		return jwtUtil.getUserId(token);
+	}
+
 }
