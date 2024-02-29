@@ -149,16 +149,4 @@ public class UserGroupController {
 				messageSource.getMessage(MessageConstants.MESSAGE_SUCCESS, null, LocaleContextHolder.getLocale()));
 	}
 
-	@PostMapping("/add-usergroups")
-	public ResponseEntity<?> addUserGroupsToUser(@RequestBody UserAddUserGroupsRequestDTO userAddUserGroupRequestDTO) {
-		LOG.info("create module request received");
-		try {
-			userGroupService.addUserGroups(userAddUserGroupRequestDTO);
-			return ResponseUtil.generateSuccessResponse(null, HttpStatus.CREATED,
-					messageSource.getMessage(MessageConstants.MESSAGE_CREATED, null, LocaleContextHolder.getLocale()));
-		} catch (ServiceException e) {
-			return ResponseUtil.generateSuccessResponse(null, HttpStatus.BAD_REQUEST, e.getMessage());
-		}
-	}
-
 }

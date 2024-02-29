@@ -271,38 +271,4 @@ public class UserGroupService {
 		};
 	}
 
-	// Added 28022024 - Koh He Xiang
-	// Add user groups to user
-	@Transactional
-	public void addUserGroups(UserAddUserGroupsRequestDTO userAddUserGroupsRequestDTO) throws ServiceException {
-		entityManager.clear();
-		Long updateUserId =  getUserId();
-		System.out.println("updateUserId: " + updateUserId);
-		System.out.println("Look for User id: " + userAddUserGroupsRequestDTO.getUserId());
-		Optional<UserEntity> user = userRepository.findById(userAddUserGroupsRequestDTO.getUserId());
-		System.out.println("I am in USER: " + user.isPresent());
-		if (user.isPresent()) {
-//			System.out.println("I am in USER: " + user.get());
-			List<Long> userGroups = userAddUserGroupsRequestDTO.getUserGroupIds();
-			System.out.println("userGroups Now: " + userGroups);
-			userGroups.forEach(id -> {
-				Optional<UserGroupEntity> userGroupEntity = userGroupRepository.findById(id);
-				if (userGroupEntity.isPresent()) {
-					userGroupEntity.get().addUserEntity(user.get());
-					userGroupEntity.get().setUpdatedBy(updateUserId);
-					System.out.println("UserGroupEntity: " + userGroupEntity.get().getUserGroupName());
-					userGroupEntity.get().getUsers().forEach(userEntity -> {
-						System.out.println("UserEntity: " + userEntity);
-					});
-					userGroupRepository.save(userGroupEntity.get());
-				}
-			});
-		}
-	}
-
-	private Long getUserId() {
-		String token = JwtUtil.getTokenFromContext();
-		return jwtUtil.getUserId(token);
-	}
-
 }
