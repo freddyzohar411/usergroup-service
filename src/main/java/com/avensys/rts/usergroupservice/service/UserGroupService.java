@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.avensys.rts.usergroupservice.payload.requesst.UserAddUserGroupsRequestDTO;
+import com.avensys.rts.usergroupservice.util.HttpResponse;
+import com.avensys.rts.usergroupservice.util.JwtUtil;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -44,6 +48,12 @@ public class UserGroupService {
 
 	@Autowired
 	private MessageSource messageSource;
+
+	@Autowired
+	private EntityManager entityManager;
+
+	@Autowired
+	private JwtUtil jwtUtil;
 
 	private UserGroupEntity mapRequestToEntity(UserGroupRequestDTO userGroupRequestDTO) {
 		UserGroupEntity entity = new UserGroupEntity();
@@ -260,4 +270,5 @@ public class UserGroupService {
 			return finalPredicate;
 		};
 	}
+
 }

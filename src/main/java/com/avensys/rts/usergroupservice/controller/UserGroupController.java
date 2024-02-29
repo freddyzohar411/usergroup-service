@@ -2,6 +2,8 @@ package com.avensys.rts.usergroupservice.controller;
 
 import java.util.List;
 
+import com.avensys.rts.usergroupservice.entity.UserEntity;
+import com.avensys.rts.usergroupservice.payload.requesst.UserAddUserGroupsRequestDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -146,4 +148,5 @@ public class UserGroupController {
 				HttpStatus.OK,
 				messageSource.getMessage(MessageConstants.MESSAGE_SUCCESS, null, LocaleContextHolder.getLocale()));
 	}
+
 }
